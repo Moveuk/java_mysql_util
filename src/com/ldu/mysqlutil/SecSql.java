@@ -33,6 +33,7 @@ public class SecSql {
 	}
 
 	// sql문 추가 메소드 가변인자 사용 
+	// 0 sql문 1부터 와일드카드
 	public SecSql append(Object... args) {
 		// 내부 길이가 0보다 크면
 		if (args.length > 0) {
@@ -41,7 +42,8 @@ public class SecSql {
 			sqlBuilder.append(sqlBit + " ");
 		}
 
-		// ArrayList 1부터 쌓음.
+		// ArrayList 1부터 하는 이유는 0번이 sql문 1번부터 ?와일드 카드 사용하기 때문
+		// 즉 변수값을 넣어줌.
 		for (int i = 1; i < args.length; i++) {
 			datas.add(args[i]);
 		}
@@ -62,7 +64,8 @@ public class SecSql {
 			// insert문 아니면 
 			stmt = connection.prepareStatement(getFormat());
 		}
-
+		
+		// setString setInt 자동으로 해줌.
 		for (int i = 0; i < datas.size(); i++) {
 			Object data = datas.get(i);
 			int parameterIndex = i + 1;
@@ -88,7 +91,7 @@ public class SecSql {
 		return sqlBuilder.toString().trim();
 	}
 
-	// getF
+	// sql문 출력과정 만약 와일드카드가 존재하고 인자들이 있으면 \\?'값'형식으로 넣어줌.
 	public String getRawSql() {
 		String rawSql = getFormat();
 

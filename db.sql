@@ -1,3 +1,4 @@
+// db 초기화 사용 전체 선택 후 F9 누르면 삭제되고 다시 생김.
 DROP DATABASE IF EXISTS mysqlutil;
 CREATE DATABASE mysqlutil;
 USE mysqlutil;
