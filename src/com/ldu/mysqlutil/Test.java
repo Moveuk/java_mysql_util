@@ -3,9 +3,49 @@ package com.ldu.mysqlutil;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Test {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws JsonMappingException, JsonProcessingException {
+		
+		// mysqlUtilTest();
+		
+		jacksonTest();
+		
+	}
+
+	private static void jacksonTest() throws JsonMappingException, JsonProcessingException {
+		ObjectMapper om = new ObjectMapper();
+
+		
+		// jsonString to Map
+		// {"id":1, "title":"제목"}
+		String jsonStr1 = "{\"id\":1,\"title\":\"제목\",\"body\":\"내용\",\"memberId\":1}";
+					// value 읽은 json을 Map으로.
+		Map map1 = om.readValue(jsonStr1, Map.class);
+		System.out.println("map1.get(\"id\") : " + map1.get("id"));
+		System.out.println("(int)map1.get(\"id\") + 1 : " + ((int) map1.get("id") + 1));
+		System.out.println("map1.get(\"title\") : " + map1.get("title"));
+
+
+		// jsonString to Article
+		// {"id":1, "title":"제목"}
+		Article article1 = om.readValue(jsonStr1, Article.class);
+		System.out.println(article1);
+
+		
+		// map to Article
+		Article articl2 = om.convertValue(map1, Article.class);
+		System.out.println(articl2);
+	}
+	
+	
+	private static void mysqlUtilTest() {
+		
 		// 새로운 방식
 		// 맨처음 딱 한번만 호스트, 아이디, 패스워드, db명 설정
 		// MysqlUtil.java로 보내서 private 변수에 저장함.
@@ -165,3 +205,16 @@ public class Test {
 	 * end finally try } // end try System.out.println("Goodbye!"); }// end main
 	 */
 }
+
+					// 모르는 데이터는 무시하도록( 배열 갯수가 맞지않아도) 설정.
+@JsonIgnoreProperties(ignoreUnknown = true)
+class Article {
+	public int id;
+	public String title;
+	public String body;
+
+	@Override
+	public String toString() {
+		return "Article [id=" + id + ", title=" + title + ", body=" + body + "]";
+	}
+} 
