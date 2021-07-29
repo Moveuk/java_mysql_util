@@ -44,11 +44,11 @@ public class MysqlUtil {
 		MysqlUtil.dbLoginPw = dbLoginPw;
 		MysqlUtil.dbName = dbName;
 	}
-	
+
 	public static void closeConnection() {
 		long currentThreadId = Thread.currentThread().getId();
 
-		if (connections.containsKey(currentThreadId) == false) {
+		if (!connections.containsKey(currentThreadId)) {
 			return;
 		}
 
@@ -64,7 +64,7 @@ public class MysqlUtil {
 
 		connections.remove(currentThreadId);
 	}
-	
+
 	// test.java 에서 Connection을 얻는 과정
 	// conn drivermanager 거쳐서, stmt sql 하고 이런과정 한번에 하도록 기능 구현
 	private static Connection getConnection() {
@@ -73,7 +73,7 @@ public class MysqlUtil {
 
 		// 기존에 커넥션 키값이 존재하는지
 		// 존재 하지 않으면 처음 커넥션 시도이므로 Driver 찾아서(Class.forname: 드라이버정보넘김)
-		if (connections.containsKey(currentThreadId) == false) {
+		if (!connections.containsKey(currentThreadId)) {
 			try {
 				Class.forName("com.mysql.cj.jdbc.Driver");
 			} catch (ClassNotFoundException e) {
@@ -266,7 +266,7 @@ public class MysqlUtil {
 
 		return affectedRows;
 	}
-	
+
 	public static int delete(SecSql sql) {
 		return update(sql);
 	}

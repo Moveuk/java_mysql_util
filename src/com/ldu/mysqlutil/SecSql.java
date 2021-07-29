@@ -32,7 +32,7 @@ public class SecSql {
 		return getFormat().startsWith("INSERT");
 	}
 
-	// sql문 추가 메소드 가변인자 사용 
+	// sql문 추가 메소드 가변인자 사용
 	// 0 sql문 1부터 와일드카드
 	public SecSql append(Object... args) {
 		// 내부 길이가 0보다 크면
@@ -61,10 +61,10 @@ public class SecSql {
 			// https://runebook.dev/ko/docs/openjdk/java.sql/java/sql/statement
 			stmt = connection.prepareStatement(getFormat(), Statement.RETURN_GENERATED_KEYS);
 		} else {
-			// insert문 아니면 
+			// insert문 아니면
 			stmt = connection.prepareStatement(getFormat());
 		}
-		
+
 		// setString setInt 자동으로 해줌.
 		for (int i = 0; i < datas.size(); i++) {
 			Object data = datas.get(i);
@@ -95,9 +95,7 @@ public class SecSql {
 	public String getRawSql() {
 		String rawSql = getFormat();
 
-		for (int i = 0; i < datas.size(); i++) {
-			Object data = datas.get(i);
-
+		for (Object data : datas) {
 			rawSql = rawSql.replaceFirst("\\?", "'" + data + "'");
 		}
 
@@ -107,4 +105,4 @@ public class SecSql {
 	public static SecSql from(String sql) {
 		return new SecSql().append(sql);
 	}
-} 
+}

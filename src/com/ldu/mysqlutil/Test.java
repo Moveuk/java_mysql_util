@@ -5,23 +5,97 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Test {
 
 	public static void main(String[] args) throws JsonMappingException, JsonProcessingException {
-		
+
+		// mysqlUtil 기본 테스트
 		// mysqlUtilTest();
-		
-		jacksonTest();
-		
+
+		// jackson 기본 테스트
+		 jacksonTest();
+
+		// 리스트 파싱 테스트 1	: 리스트 형태로 받음
+		jacksonListTest1();
+		// 리스트 파싱 테스트 2	: 각 객체를 맵으로 받고 튜플을 리스트로 받음.
+		jacksonListTest2();
+		// 리스트 파싱 테스트 3 : 제이슨 스트링 집합을 타입레퍼런스 자바빈 형태 리스트로 변환함
+		jacksonListTest3();
+		// 리스트 파싱 테스트 4 : 스트링을 2번째처럼 한 번 바꾸고 다시 세번째 테스트 형태로 바꿀 수 있음.
+		jacksonListTest4();
+
+		// Json, List<Map<String, Object>>, List<Article>(자바 빈 형태) 이 세 형태는 자유롭게 변환이 가능함.
 	}
+	private static void jacksonListTest4() throws JsonMappingException, JsonProcessingException {
+		ObjectMapper om = new ObjectMapper();
+
+		// jsonString to List<Map<String, Object>>
+		// List<Map<String, Object>> to List<Article>
+		// json 스트링을 맵 리스트로 바꾸고 다시 아티클(자바빈) 리스트로 바꿈.
+		String jsonStr1 = "[{\"id\":2,\"title\":\"제목2\",\"body\":\"내용2\",\"memberId\":2}, {\"id\":1,\"title\":\"제목1\",\"body\":\"내용1\",\"memberId\":1}]";
+
+		List<Map<String, Object>> list1 = om.readValue(jsonStr1, new TypeReference<List<Map<String, Object>>>() {
+		});
+
+		List<Article> list2 = om.convertValue(list1, new TypeReference<List<Article>>() {
+		});
+
+		System.out.println(list2);
+	}
+
+
+
+	private static void jacksonListTest3() throws JsonMappingException, JsonProcessingException {
+		ObjectMapper om = new ObjectMapper();
+
+		// jsonString to List<Article>
+		String jsonStr1 = "[{\"id\":2,\"title\":\"제목2\",\"body\":\"내용2\",\"memberId\":2}, {\"id\":1,\"title\":\"제목1\",\"body\":\"내용1\",\"memberId\":1}]";
+
+		List<Article> list1 = om.readValue(jsonStr1, new TypeReference<List<Article>>() {
+		});
+		System.out.println(list1);
+		System.out.println(list1.get(0));
+		System.out.println(list1.get(0).id);
+	}
+
+
+
+	private static void jacksonListTest2() throws JsonMappingException, JsonProcessingException {
+		ObjectMapper om = new ObjectMapper();
+
+		// jsonString to List<Map<String, Object>>
+		String jsonStr1 = "[{\"id\":2,\"title\":\"제목2\",\"body\":\"내용2\",\"memberId\":2}, {\"id\":1,\"title\":\"제목1\",\"body\":\"내용1\",\"memberId\":1}]";
+
+		List<Map<String, Object>> list1 = om.readValue(jsonStr1, new TypeReference<List<Map<String, Object>>>() {
+		});
+		System.out.println(list1);
+		System.out.println(list1.get(0));
+		System.out.println(list1.get(0).get("id"));
+	}
+
+
+
+	private static void jacksonListTest1() throws JsonMappingException, JsonProcessingException {
+		ObjectMapper om = new ObjectMapper();
+
+		// jsonString to List
+		String jsonStr1 = "[{\"id\":2,\"title\":\"제목2\",\"body\":\"내용2\",\"memberId\":2}, {\"id\":1,\"title\":\"제목1\",\"body\":\"내용1\",\"memberId\":1}]";
+
+		List list1 = om.readValue(jsonStr1, List.class);
+		System.out.println(list1);
+		System.out.println(list1.get(0));
+		System.out.println(((Map) list1.get(0)).get("id"));
+	}
+
+
 
 	private static void jacksonTest() throws JsonMappingException, JsonProcessingException {
 		ObjectMapper om = new ObjectMapper();
 
-		
 		// jsonString to Map
 		// {"id":1, "title":"제목"}
 		String jsonStr1 = "{\"id\":1,\"title\":\"제목\",\"body\":\"내용\",\"memberId\":1}";
@@ -37,15 +111,15 @@ public class Test {
 		Article article1 = om.readValue(jsonStr1, Article.class);
 		System.out.println(article1);
 
-		
+
 		// map to Article
 		Article articl2 = om.convertValue(map1, Article.class);
 		System.out.println(articl2);
 	}
-	
-	
+
+
 	private static void mysqlUtilTest() {
-		
+
 		// 새로운 방식
 		// 맨처음 딱 한번만 호스트, 아이디, 패스워드, db명 설정
 		// MysqlUtil.java로 보내서 private 변수에 저장함.
@@ -128,11 +202,11 @@ public class Test {
 
 //		// selectRows : 쿼리 결과를 리턴함.
 //		// SecSql에서 쿼리문 정리한걸 mysqlutil로 보내서 커넥션 접속해서 값을 가져옴.
-//		
+//
 //		// 여러 튜플(여러 줄)을 가져올때 Rows
 //		List<Map<String, Object>> articleListMap = MysqlUtil.selectRows(new SecSql().append("SELECT * FROM article"));
 //		System.out.println("articleListMap : " + articleListMap);
-//		
+//
 //		// 단일 튜플(MAP : 컬럼 정보 한개씩)을 가져올때 Ros
 //		// ex) id가 PK라서 한개밖에 안나올때 사용
 //		Map<String, Object> articleMap = MysqlUtil
@@ -151,19 +225,19 @@ public class Test {
 //		boolean idIs1 = MysqlUtil
 //				.selectRowBooleanValue(new SecSql().append("SELECT id = 1 FROM article WHERE id = ?", 1));
 //		System.out.println("id is 1 : " + idIs1);
-//		
+//
 //		// Insert 사용할 때.
 //		String newTitle = "새 제목";
 //		String newBody = "새 내용";
-//		
+//
 //		SecSql sql = new SecSql().append("INSERT INTO article");
 //		sql.append("SET regDate = NOW()");
 //		sql.append(", updateDate = NOW()");
 //		sql.append(", title = ?", newTitle);
 //		sql.append(", body = ?", newBody);
-//		
+//
 //		MysqlUtil.insert(sql);
-//		
+//
 //		MysqlUtil.closeConnection();
 	}
 
@@ -172,28 +246,28 @@ public class Test {
 	 * // JDBC driver name and database URL static final String JDBC_DRIVER =
 	 * "com.mysql.cj.jdbc.Driver"; static final String DB_URL =
 	 * "jdbc:mysql://localhost:3306/mysqlutil?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul&useOldAliasMetadataBehavior=true&zeroDateTimeNehavior=convertToNull&connectTimeout=60";
-	 * 
+	 *
 	 * // Database credentials static final String USER = "moveuk"; static final
 	 * String PASS = "1234";
-	 * 
+	 *
 	 * public static void main(String[] args) { Connection conn = null; Statement
 	 * stmt = null; try { // STEP 2: Register JDBC driver
 	 * Class.forName(JDBC_DRIVER);
-	 * 
+	 *
 	 * // STEP 3: Open a connection
 	 * System.out.println("Connecting to a selected database..."); conn =
 	 * DriverManager.getConnection(DB_URL, USER, PASS);
 	 * System.out.println("Connected database successfully...");
-	 * 
+	 *
 	 * // STEP 4: Execute a query System.out.println("Creating statement..."); stmt
 	 * = conn.createStatement();
-	 * 
+	 *
 	 * String sql = "SELECT * FROM article"; ResultSet rs = stmt.executeQuery(sql);
 	 * // STEP 5: Extract data from result set while (rs.next()) { // Retrieve by
 	 * column name int id = rs.getInt("id"); String regDate =
 	 * rs.getString("regDate"); String title = rs.getString("title"); String body =
 	 * rs.getString("body");
-	 * 
+	 *
 	 * // Display values System.out.print("id: " + id);
 	 * System.out.print(", regDate: " + regDate); System.out.print(", title: " +
 	 * title); System.out.println(", body: " + body); } rs.close(); } catch
@@ -217,4 +291,4 @@ class Article {
 	public String toString() {
 		return "Article [id=" + id + ", title=" + title + ", body=" + body + "]";
 	}
-} 
+}
