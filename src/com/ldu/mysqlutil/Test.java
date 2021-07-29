@@ -16,20 +16,44 @@ public class Test {
 		// mysqlUtil 기본 테스트
 		// mysqlUtilTest();
 
-		// jackson 기본 테스트
-		 jacksonTest();
-
-		// 리스트 파싱 테스트 1	: 리스트 형태로 받음
-		jacksonListTest1();
-		// 리스트 파싱 테스트 2	: 각 객체를 맵으로 받고 튜플을 리스트로 받음.
-		jacksonListTest2();
-		// 리스트 파싱 테스트 3 : 제이슨 스트링 집합을 타입레퍼런스 자바빈 형태 리스트로 변환함
-		jacksonListTest3();
-		// 리스트 파싱 테스트 4 : 스트링을 2번째처럼 한 번 바꾸고 다시 세번째 테스트 형태로 바꿀 수 있음.
-		jacksonListTest4();
+//		// jackson 기본 테스트
+//		 jacksonTest();
+//
+//		// 리스트 파싱 테스트 1	: 리스트 형태로 받음
+//		jacksonListTest1();
+//		// 리스트 파싱 테스트 2	: 각 객체를 맵으로 받고 튜플을 리스트로 받음.
+//		jacksonListTest2();
+//		// 리스트 파싱 테스트 3 : 제이슨 스트링 집합을 타입레퍼런스 자바빈 형태 리스트로 변환함
+//		jacksonListTest3();
+//		// 리스트 파싱 테스트 4 : 스트링을 2번째처럼 한 번 바꾸고 다시 세번째 테스트 형태로 바꿀 수 있음.
+//		jacksonListTest4();
 
 		// Json, List<Map<String, Object>>, List<Article>(자바 빈 형태) 이 세 형태는 자유롭게 변환이 가능함.
+
+		// Select 했을 때 두번째 인자로 주면 Article DTO 형태로 보냄.
+		mysqlUtilJacksonTest();
 	}
+
+	// 기존 sql 접속 방식에 데이터를 받아와서 Map이 아닌 특정 객체 형태로 만드는 기능 추가
+	private static void mysqlUtilJacksonTest() {
+		MysqlUtil.setDBInfo("localhost", "moveuk", "1234", "mysqlutil");
+
+		MysqlUtil.setDevMode(true);
+
+		// select rows
+		SecSql sql1 = new SecSql();
+		sql1.append("SELECT * FROM article ORDER BY id DESC");
+
+		List<Article> articleList = MysqlUtil.selectRows(sql1, Article.class);
+		System.out.println("articleList : " + articleList);
+
+		// select row
+		SecSql sql2 = new SecSql();
+		sql2.append("SELECT * FROM article WHERE id = ?", 1);
+		Article article = MysqlUtil.selectRow(sql2, Article.class);
+		System.out.println("article : " + article);
+	}
+
 	private static void jacksonListTest4() throws JsonMappingException, JsonProcessingException {
 		ObjectMapper om = new ObjectMapper();
 
@@ -47,8 +71,6 @@ public class Test {
 		System.out.println(list2);
 	}
 
-
-
 	private static void jacksonListTest3() throws JsonMappingException, JsonProcessingException {
 		ObjectMapper om = new ObjectMapper();
 
@@ -61,8 +83,6 @@ public class Test {
 		System.out.println(list1.get(0));
 		System.out.println(list1.get(0).id);
 	}
-
-
 
 	private static void jacksonListTest2() throws JsonMappingException, JsonProcessingException {
 		ObjectMapper om = new ObjectMapper();
@@ -77,8 +97,6 @@ public class Test {
 		System.out.println(list1.get(0).get("id"));
 	}
 
-
-
 	private static void jacksonListTest1() throws JsonMappingException, JsonProcessingException {
 		ObjectMapper om = new ObjectMapper();
 
@@ -91,32 +109,27 @@ public class Test {
 		System.out.println(((Map) list1.get(0)).get("id"));
 	}
 
-
-
 	private static void jacksonTest() throws JsonMappingException, JsonProcessingException {
 		ObjectMapper om = new ObjectMapper();
 
 		// jsonString to Map
 		// {"id":1, "title":"제목"}
 		String jsonStr1 = "{\"id\":1,\"title\":\"제목\",\"body\":\"내용\",\"memberId\":1}";
-					// value 읽은 json을 Map으로.
+		// value 읽은 json을 Map으로.
 		Map map1 = om.readValue(jsonStr1, Map.class);
 		System.out.println("map1.get(\"id\") : " + map1.get("id"));
 		System.out.println("(int)map1.get(\"id\") + 1 : " + ((int) map1.get("id") + 1));
 		System.out.println("map1.get(\"title\") : " + map1.get("title"));
-
 
 		// jsonString to Article
 		// {"id":1, "title":"제목"}
 		Article article1 = om.readValue(jsonStr1, Article.class);
 		System.out.println(article1);
 
-
 		// map to Article
 		Article articl2 = om.convertValue(map1, Article.class);
 		System.out.println(articl2);
 	}
-
 
 	private static void mysqlUtilTest() {
 
@@ -132,8 +145,8 @@ public class Test {
 		SecSql sql1 = new SecSql();
 		sql1.append("SELECT * FROM article ORDER BY id DESC");
 		// MysqlUtil을 통해서 자동으로 쿼리 결과를 호출함. (executeQuery까지 약 100줄 생략.)
-		List<Map<String, Object>> articleListMap = MysqlUtil.selectRows(sql1);
-		System.out.println("articleListMap : " + articleListMap);
+		List<Map<String, Object>> articleMapList = MysqlUtil.selectRows(sql1);
+		System.out.println("articleMapList : " + articleMapList);
 
 		// select row 예제
 		SecSql sql2 = new SecSql();
@@ -280,7 +293,7 @@ public class Test {
 	 */
 }
 
-					// 모르는 데이터는 무시하도록( 배열 갯수가 맞지않아도) 설정.
+// 모르는 데이터는 무시하도록( 배열 갯수가 맞지않아도) 설정.
 @JsonIgnoreProperties(ignoreUnknown = true)
 class Article {
 	public int id;

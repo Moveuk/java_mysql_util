@@ -7,10 +7,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MysqlUtil {
 	// db 접속 정보 세팅
@@ -101,18 +105,27 @@ public class MysqlUtil {
 		return connections.get(currentThreadId);
 	}
 
-	public static Map<String, Object> selectRow(SecSql sql) {
-		List<Map<String, Object>> rows = selectRows(sql);
+	public static <T> T selectRow(SecSql sql) {
+		return (T) selectRow(sql, Map.class);
+	}
+
+	public static <T> T selectRow(SecSql sql, Class<T> cls) {
+		List<T> rows = selectRows(sql, cls);
 
 		if (rows.size() == 0) {
-			return new HashMap<>();
+			return null;
 		}
 
 		return rows.get(0);
 	}
 
-	public static List<Map<String, Object>> selectRows(SecSql sql) throws MysqlUtilException {
-		List<Map<String, Object>> rows = new ArrayList<>();
+	public static <T> List<T> selectRows(SecSql sql) {
+		return (List<T>) selectRows(sql, Map.class);
+	}
+
+	public static <T> List<T> selectRows(SecSql sql, Class<T> cls) throws MysqlUtilException {
+		ObjectMapper om = new ObjectMapper();
+		List<T> rows = new ArrayList<>();
 
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -137,12 +150,20 @@ public class MysqlUtil {
 						String dateValue = value.toString();
 						dateValue = dateValue.substring(0, dateValue.length() - 2);
 						row.put(columnName, dateValue);
+					} else if (value instanceof LocalDateTime) {
+						String dateValue = value.toString();
+						dateValue = dateValue.replace("T", " ");
+						row.put(columnName, dateValue);
 					} else {
 						row.put(columnName, value);
 					}
 				}
 
-				rows.add(row);
+				if (cls.getSimpleName().equals("Map")) {
+					rows.add((T) row);
+				} else {
+					rows.add((T) om.convertValue(row, cls));
+				}
 			}
 		} catch (SQLException e) {
 			closeConnection();
